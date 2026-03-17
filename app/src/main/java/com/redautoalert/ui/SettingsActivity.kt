@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ScrollView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -18,6 +19,7 @@ import com.redautoalert.R
 import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.service.AlertEventBus
+import com.redautoalert.util.DebugLog
 import com.redautoalert.util.PermissionHelper
 import com.redautoalert.util.PrefsManager
 
@@ -37,6 +39,9 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var languageSpinner: Spinner
     private lateinit var grantPermissionButton: Button
     private lateinit var testAlertButton: Button
+    private lateinit var debugLogText: TextView
+    private lateinit var debugLogScroll: ScrollView
+    private val debugLogListener: () -> Unit = { runOnUiThread { refreshDebugLog() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,11 +52,20 @@ class SettingsActivity : AppCompatActivity() {
         bindViews()
         setupListeners()
         requestPostNotificationPermission()
+
+        DebugLog.addListener(debugLogListener)
+        DebugLog.log("App opened")
     }
 
     override fun onResume() {
         super.onResume()
         updatePermissionStatus()
+        refreshDebugLog()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        DebugLog.removeListener(debugLogListener)
     }
 
     private fun bindViews() {
@@ -62,6 +76,8 @@ class SettingsActivity : AppCompatActivity() {
         languageSpinner = findViewById(R.id.languageSpinner)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
         testAlertButton = findViewById(R.id.testAlertButton)
+        debugLogText = findViewById(R.id.debugLogText)
+        debugLogScroll = findViewById(R.id.debugLogScroll)
 
         // Set initial values
         forwardingSwitch.isChecked = prefs.isForwardingEnabled
@@ -151,6 +167,7 @@ class SettingsActivity : AppCompatActivity() {
         )
 
         AlertEventBus.emitBlocking(testEvent)
+        DebugLog.log("Test alert sent")
         Toast.makeText(this, "Test alert sent! Check Android Auto.", Toast.LENGTH_LONG).show()
     }
 
@@ -202,5 +219,15 @@ class SettingsActivity : AppCompatActivity() {
                 ).show()
             }
         }
+    }
+
+    private fun refreshDebugLog() {
+        val entries = DebugLog.getEntries()
+        debugLogText.text = if (entries.isEmpty()) {
+            "No events yet..."
+        } else {
+            entries.joinToString("\n") { it.formatted() }
+        }
+        debugLogScroll.post { debugLogScroll.fullScroll(ScrollView.FOCUS_DOWN) }
     }
 }
