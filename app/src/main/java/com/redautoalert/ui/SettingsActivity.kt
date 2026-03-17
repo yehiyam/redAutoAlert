@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ScrollView
@@ -14,7 +15,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.redautoalert.BuildConfig
 import com.redautoalert.R
 import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
@@ -41,6 +44,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var testAlertButton: Button
     private lateinit var debugLogText: TextView
     private lateinit var debugLogScroll: ScrollView
+    private lateinit var debugLogCard: MaterialCardView
     private val debugLogListener: () -> Unit = { runOnUiThread { refreshDebugLog() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,8 +57,14 @@ class SettingsActivity : AppCompatActivity() {
         setupListeners()
         requestPostNotificationPermission()
 
-        DebugLog.addListener(debugLogListener)
         DebugLog.log("App opened")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (DebugLog.isEnabled) {
+            DebugLog.addListener(debugLogListener)
+        }
     }
 
     override fun onResume() {
@@ -63,8 +73,8 @@ class SettingsActivity : AppCompatActivity() {
         refreshDebugLog()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         DebugLog.removeListener(debugLogListener)
     }
 
@@ -78,6 +88,10 @@ class SettingsActivity : AppCompatActivity() {
         testAlertButton = findViewById(R.id.testAlertButton)
         debugLogText = findViewById(R.id.debugLogText)
         debugLogScroll = findViewById(R.id.debugLogScroll)
+        debugLogCard = findViewById(R.id.debugLogCard)
+
+        // Only show debug log in debug builds
+        debugLogCard.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
 
         // Set initial values
         forwardingSwitch.isChecked = prefs.isForwardingEnabled
@@ -222,9 +236,10 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun refreshDebugLog() {
+        if (!BuildConfig.DEBUG) return
         val entries = DebugLog.getEntries()
         debugLogText.text = if (entries.isEmpty()) {
-            "No events yet..."
+            getString(R.string.debug_log_empty)
         } else {
             entries.joinToString("\n") { it.formatted() }
         }
