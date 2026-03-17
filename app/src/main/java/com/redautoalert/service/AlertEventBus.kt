@@ -2,6 +2,7 @@ package com.redautoalert.service
 
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.model.AlertProcessor
+import com.redautoalert.util.DebugLog
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -47,11 +48,16 @@ object AlertEventBus {
 
     fun emitBlocking(event: AlertEvent) {
         _alerts.tryEmit(event)
+        DebugLog.log("Alert: ${event.title} — ${event.text}")
         synchronized(processors) {
-            processors.filter { it.isEnabled() }.forEach { processor ->
+            val enabled = processors.filter { it.isEnabled() }
+            DebugLog.log("Dispatching to ${enabled.size}/${processors.size} processors")
+            enabled.forEach { processor ->
                 try {
                     processor.onAlert(event)
+                    DebugLog.log("✓ ${processor.javaClass.simpleName}")
                 } catch (e: Exception) {
+                    DebugLog.log("✗ ${processor.javaClass.simpleName}: ${e.message}")
                     android.util.Log.e("AlertEventBus", "Processor error: ${e.message}", e)
                 }
             }

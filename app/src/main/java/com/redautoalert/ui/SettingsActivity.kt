@@ -4,8 +4,10 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ScrollView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -13,11 +15,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.redautoalert.BuildConfig
 import com.redautoalert.R
 import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.service.AlertEventBus
+import com.redautoalert.util.DebugLog
 import com.redautoalert.util.PermissionHelper
 import com.redautoalert.util.PrefsManager
 
@@ -37,6 +42,10 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var languageSpinner: Spinner
     private lateinit var grantPermissionButton: Button
     private lateinit var testAlertButton: Button
+    private lateinit var debugLogText: TextView
+    private lateinit var debugLogScroll: ScrollView
+    private lateinit var debugLogCard: MaterialCardView
+    private val debugLogListener: () -> Unit = { runOnUiThread { refreshDebugLog() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,11 +56,26 @@ class SettingsActivity : AppCompatActivity() {
         bindViews()
         setupListeners()
         requestPostNotificationPermission()
+
+        DebugLog.log("App opened")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (DebugLog.isEnabled) {
+            DebugLog.addListener(debugLogListener)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         updatePermissionStatus()
+        refreshDebugLog()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        DebugLog.removeListener(debugLogListener)
     }
 
     private fun bindViews() {
@@ -62,6 +86,12 @@ class SettingsActivity : AppCompatActivity() {
         languageSpinner = findViewById(R.id.languageSpinner)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
         testAlertButton = findViewById(R.id.testAlertButton)
+        debugLogText = findViewById(R.id.debugLogText)
+        debugLogScroll = findViewById(R.id.debugLogScroll)
+        debugLogCard = findViewById(R.id.debugLogCard)
+
+        // Only show debug log in debug builds
+        debugLogCard.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
 
         // Set initial values
         forwardingSwitch.isChecked = prefs.isForwardingEnabled
@@ -151,6 +181,7 @@ class SettingsActivity : AppCompatActivity() {
         )
 
         AlertEventBus.emitBlocking(testEvent)
+        DebugLog.log("Test alert sent")
         Toast.makeText(this, "Test alert sent! Check Android Auto.", Toast.LENGTH_LONG).show()
     }
 
@@ -202,5 +233,16 @@ class SettingsActivity : AppCompatActivity() {
                 ).show()
             }
         }
+    }
+
+    private fun refreshDebugLog() {
+        if (!BuildConfig.DEBUG) return
+        val entries = DebugLog.getEntries()
+        debugLogText.text = if (entries.isEmpty()) {
+            getString(R.string.debug_log_empty)
+        } else {
+            entries.joinToString("\n") { it.formatted() }
+        }
+        debugLogScroll.post { debugLogScroll.fullScroll(ScrollView.FOCUS_DOWN) }
     }
 }

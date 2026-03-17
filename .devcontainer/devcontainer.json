@@ -1,0 +1,26 @@
+{
+  "name": "Red Auto Alert",
+  "image": "mcr.microsoft.com/devcontainers/java:21",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installGradle": "8.5"
+    },
+    "ghcr.io/anthropics/devcontainer-features/android-sdk:1": {
+      "compileSdkVersion": "34",
+      "buildToolsVersion": "34.0.0",
+      "cmdLineToolsVersion": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mathiasfrohlich.Kotlin",
+        "fwcd.kotlin",
+        "vscjava.vscode-gradle"
+      ]
+    }
+  },
+  "postCreateCommand": "echo 'sdk.dir=/usr/lib/android-sdk' > local.properties && chmod +x gradlew && ./gradlew --version",
+  "remoteUser": "vscode"
+}

@@ -8,6 +8,7 @@ import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.processor.AlertForwarder
 import com.redautoalert.processor.TtsAlertAnnouncer
+import com.redautoalert.util.DebugLog
 import com.redautoalert.util.PrefsManager
 
 /**
@@ -45,15 +46,20 @@ class AlertNotificationListener : NotificationListenerService() {
         }
 
         Log.i(TAG, "AlertNotificationListener started")
+        DebugLog.log("NotificationListener started")
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
 
         if (sbn.packageName !in MONITORED_PACKAGES) return
-        if (!prefs.isForwardingEnabled) return
+        if (!prefs.isForwardingEnabled) {
+            DebugLog.log("Ignored (forwarding disabled): ${sbn.packageName}")
+            return
+        }
 
         Log.d(TAG, "Red Alert notification from: ${sbn.packageName}")
+        DebugLog.log("Notification from: ${sbn.packageName}")
 
         val event = parseAlertEvent(sbn) ?: return
 
