@@ -100,7 +100,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Grant Notification Access"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -200,7 +200,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="🚨 Send Test Alert"
-                    style="@style/Widget.MaterialComponents.Button" />
+                    style="@style/Widget.Material3.Button" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
