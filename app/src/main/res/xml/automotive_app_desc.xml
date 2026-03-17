@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<automotiveApp>
+    <!-- Declares that this app provides messaging-style notifications for Android Auto -->
+    <uses name="notification" />
+</automotiveApp>
