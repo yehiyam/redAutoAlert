@@ -17,6 +17,11 @@
         android:theme="@style/Theme.Material3.DayNight"
         tools:targetApi="34">
 
+        <!-- Declares Android Auto notification support to the car host -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
         <!-- Main settings activity -->
         <activity
             android:name=".ui.SettingsActivity"
@@ -37,6 +42,16 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <!-- Handles mark-as-read action from Android Auto messaging notifications -->
+        <receiver
+            android:name=".service.AlertDismissReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.redautoalert.ACTION_MARK_READ" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

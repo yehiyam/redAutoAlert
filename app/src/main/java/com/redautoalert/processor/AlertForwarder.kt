@@ -13,6 +13,7 @@ import androidx.core.app.Person
 import com.redautoalert.R
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.model.AlertProcessor
+import com.redautoalert.service.AlertDismissReceiver
 import com.redautoalert.ui.SettingsActivity
 import com.redautoalert.util.PrefsManager
 
@@ -91,7 +92,9 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
         // Mark-as-read action (required by Android Auto for messaging notifications)
         val markReadIntent = PendingIntent.getBroadcast(
             context, notificationId + 10000,
-            Intent("com.redautoalert.ACTION_MARK_READ").setPackage(context.packageName),
+            Intent(AlertDismissReceiver.ACTION_MARK_READ)
+                .setPackage(context.packageName)
+                .putExtra(AlertDismissReceiver.EXTRA_NOTIFICATION_ID, notificationId),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val markReadAction = NotificationCompat.Action.Builder(
