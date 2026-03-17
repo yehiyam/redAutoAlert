@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Siren beacon dome -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,40 C46,34 62,34 62,40 L62,57 L46,57 Z"/>
+
+    <!-- Siren base -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,57 L68,57 L68,63 C68,66 66,68 63,68 L45,68 C42,68 40,66 40,63 Z"/>
+
+    <!-- Left wave inner -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M43,38 Q33,49 43,60"/>
+
+    <!-- Left wave outer -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M39,32 Q25,49 39,66"/>
+
+    <!-- Right wave inner -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M65,38 Q75,49 65,60"/>
+
+    <!-- Right wave outer -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M69,32 Q83,49 69,66"/>
+</vector>
