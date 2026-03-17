@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.car.app.notification.CarAppExtender
@@ -48,11 +47,12 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
     }
 
     override fun onAlert(event: AlertEvent) {
+        val isPhoneNotificationEnabled = prefs.isPhoneNotificationEnabled
         val notificationId = notificationCounter++
         val notification = buildMessagingNotification(event, notificationId)
         notificationManager.notify(notificationId, notification)
 
-        if (!prefs.isPhoneNotificationEnabled) {
+        if (!isPhoneNotificationEnabled) {
             // Remove from phone after a short delay.  Android Auto has already
             // consumed the notification so the in-car alert is unaffected.
             handler.postDelayed({ notificationManager.cancel(notificationId) }, 2_000)
