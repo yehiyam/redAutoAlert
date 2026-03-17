@@ -15,6 +15,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -30,14 +32,36 @@ jobs:
         with:
           validate-wrappers: true
 
-      - name: Build debug APK
-        run: chmod +x gradlew && ./gradlew assembleDebug
+      - name: Compute version info
+        id: version
+        run: |
+          VERSION_CODE=$(git rev-list --count HEAD)
+          VERSION_NAME="1.0.${VERSION_CODE}"
+          echo "code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Decode keystore
+        if: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          echo "SIGNING_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          BUILD_VERSION_CODE: ${{ steps.version.outputs.code }}
+          BUILD_VERSION_NAME: ${{ steps.version.outputs.name }}
+          SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: chmod +x gradlew && ./gradlew assembleRelease
 
       - name: Upload APK (artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
           compression-level: 0
 
       - name: Upload APK to rolling release
@@ -45,8 +69,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Latest Debug Build
-          body: "Auto-built from latest commit on main. Download the APK directly below."
-          files: app/build/outputs/apk/debug/app-debug.apk
+          name: Latest Release Build
+          body: "Auto-built from latest commit on main. Version ${{ steps.version.outputs.name }} (build ${{ steps.version.outputs.code }}). Download the APK directly below."
+          files: app/build/outputs/apk/release/app-release.apk
           make_latest: true
           prerelease: true

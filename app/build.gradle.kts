@@ -11,13 +11,35 @@ android {
         applicationId = "com.redautoalert"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = (System.getenv("BUILD_VERSION_CODE")?.toIntOrNull()) ?: 1
+        versionName = System.getenv("BUILD_VERSION_NAME") ?: "1.0.0"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("SIGNING_KEYSTORE_PATH")
+            val keystorePassword = System.getenv("SIGNING_KEYSTORE_PASSWORD")
+            val keyAliasValue = System.getenv("SIGNING_KEY_ALIAS")
+            val keyPasswordValue = System.getenv("SIGNING_KEY_PASSWORD")
+            if (keystorePath != null) {
+                require(keystorePassword != null) { "SIGNING_KEYSTORE_PASSWORD must be set when SIGNING_KEYSTORE_PATH is provided" }
+                require(keyAliasValue != null) { "SIGNING_KEY_ALIAS must be set when SIGNING_KEYSTORE_PATH is provided" }
+                require(keyPasswordValue != null) { "SIGNING_KEY_PASSWORD must be set when SIGNING_KEYSTORE_PATH is provided" }
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                keyAlias = keyAliasValue
+                keyPassword = keyPasswordValue
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = if (System.getenv("SIGNING_KEYSTORE_PATH") != null)
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
