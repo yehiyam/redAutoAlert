@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.car.app.notification.CarAppExtender
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
@@ -33,6 +35,7 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val prefs = PrefsManager(context)
+    private val handler = Handler(Looper.getMainLooper())
 
     private val alertPerson = Person.Builder()
         .setName("🚨 Red Alert")
@@ -48,6 +51,12 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
         val notificationId = notificationCounter++
         val notification = buildMessagingNotification(event, notificationId)
         notificationManager.notify(notificationId, notification)
+
+        if (!prefs.isPhoneNotificationEnabled) {
+            // Remove from phone after a short delay.  Android Auto has already
+            // consumed the notification so the in-car alert is unaffected.
+            handler.postDelayed({ notificationManager.cancel(notificationId) }, 2_000)
+        }
     }
 
     override fun onAlertCleared(alertId: String) {
@@ -91,10 +100,13 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             .setShowsUserInterface(false)
             .build()
 
-        return NotificationCompat.Builder(context, if (prefs.isPhoneNotificationEnabled) CHANNEL_ID else SILENT_CHANNEL_ID)
+        val showOnPhone = prefs.isPhoneNotificationEnabled
+
+        return NotificationCompat.Builder(context, if (showOnPhone) CHANNEL_ID else SILENT_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_alert)
             .setStyle(messagingStyle)
             .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setSilent(!showOnPhone)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
@@ -146,8 +158,9 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
         val channel = NotificationChannel(
             SILENT_CHANNEL_ID,
             SILENT_CHANNEL_NAME,
-            // Must be at least IMPORTANCE_HIGH so Android Auto still shows the alert.
-            // Phone-side noise is suppressed via setSound/enableVibration below.
+            // Must stay IMPORTANCE_HIGH — Android Auto ignores lower-importance channels.
+            // Phone-side noise is suppressed via setSound/enableVibration below,
+            // and the notification is cancelled shortly after posting (see onAlert).
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Silent carrier for Android Auto-only Red Alert notifications"
