@@ -27,8 +27,8 @@ class AlertDismissReceiver : BroadcastReceiver() {
         if (intent.action != ACTION_MARK_READ) return
 
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
-        Log.d(TAG, "Alert dismissed from Android Auto (id=$notificationId)")
-        DebugLog.log("Alert dismissed from Android Auto (id=$notificationId)")
+        Log.d(TAG, "Alert marked as read from Android Auto (id=$notificationId)")
+        DebugLog.log("Alert marked as read from Android Auto (id=$notificationId)")
 
         if (notificationId != -1) {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
