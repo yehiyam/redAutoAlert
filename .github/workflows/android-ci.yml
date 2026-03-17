@@ -30,8 +30,20 @@ jobs:
       - name: Build debug APK
         run: chmod +x gradlew && ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK (artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: app-debug.apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          compression-level: 0
+
+      - name: Upload APK to rolling release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Debug Build
+          body: "Auto-built from latest commit on main. Download the APK directly below."
+          files: app/build/outputs/apk/debug/app-debug.apk
+          make_latest: true
+          prerelease: true
