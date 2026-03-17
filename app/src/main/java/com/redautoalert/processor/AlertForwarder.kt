@@ -146,10 +146,14 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
         val channel = NotificationChannel(
             SILENT_CHANNEL_ID,
             SILENT_CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_LOW
+            // Must be at least IMPORTANCE_HIGH so Android Auto still shows the alert.
+            // Phone-side noise is suppressed via setSound/enableVibration below.
+            NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Silent carrier for Android Auto-only Red Alert notifications"
+            setSound(null, null)
             enableVibration(false)
+            enableLights(false)
             setShowBadge(false)
             setBypassDnd(false)
             lockscreenVisibility = android.app.Notification.VISIBILITY_SECRET
