@@ -15,9 +15,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.redautoalert.R
+import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
-import com.redautoalert.processor.AlertForwarder
-import com.redautoalert.processor.TtsAlertAnnouncer
 import com.redautoalert.service.AlertEventBus
 import com.redautoalert.util.PermissionHelper
 import com.redautoalert.util.PrefsManager
@@ -29,8 +28,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private lateinit var prefs: PrefsManager
-    private lateinit var alertForwarder: AlertForwarder
-    private lateinit var ttsAnnouncer: TtsAlertAnnouncer
 
     // Views
     private lateinit var statusText: TextView
@@ -46,12 +43,6 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         prefs = PrefsManager(this)
-        alertForwarder = AlertForwarder(this)
-        ttsAnnouncer = TtsAlertAnnouncer(this)
-
-        // Register processors with the event bus
-        AlertEventBus.registerProcessor(alertForwarder)
-        AlertEventBus.registerProcessor(ttsAnnouncer)
 
         bindViews()
         setupListeners()
@@ -61,11 +52,6 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionStatus()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        ttsAnnouncer.shutdown()
     }
 
     private fun bindViews() {
@@ -108,7 +94,7 @@ class SettingsActivity : AppCompatActivity() {
             ) {
                 val codes = arrayOf("he", "en", "ru", "ar")
                 prefs.ttsLanguage = codes[position]
-                ttsAnnouncer.updateLanguage()
+                (application as? RedAutoAlertApp)?.ttsAnnouncer?.updateLanguage()
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }

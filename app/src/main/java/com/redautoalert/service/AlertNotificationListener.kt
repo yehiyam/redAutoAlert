@@ -4,7 +4,10 @@ import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
+import com.redautoalert.processor.AlertForwarder
+import com.redautoalert.processor.TtsAlertAnnouncer
 import com.redautoalert.util.PrefsManager
 
 /**
@@ -32,6 +35,15 @@ class AlertNotificationListener : NotificationListenerService() {
     override fun onCreate() {
         super.onCreate()
         prefs = PrefsManager(this)
+
+        // Ensure processors are registered. Application.onCreate() should have done this,
+        // but if the system restarted us in an unusual way, register as fallback.
+        if (application !is RedAutoAlertApp) {
+            Log.w(TAG, "Application not initialized, registering processors as fallback")
+            AlertEventBus.registerProcessor(AlertForwarder(this))
+            AlertEventBus.registerProcessor(TtsAlertAnnouncer(this))
+        }
+
         Log.i(TAG, "AlertNotificationListener started")
     }
 
