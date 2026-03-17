@@ -29,6 +29,13 @@ Android app that captures Red Alert (Tzofar) rocket/missile notifications and fo
 - **Build command:** `./gradlew assembleDebug`
 - **APK output:** `app/build/outputs/apk/debug/app-debug.apk`
 
+## Git Workflow
+
+When asked to fix something or make code changes:
+
+1. **If on `main`**: create a new feature branch, commit the changes, and open a pull request.
+2. **If on a feature branch with an open PR**: commit the changes and push to the existing branch (the PR updates automatically).
+
 ## Conventions
 
 - Use `CarAppExtender` for Android Auto notification compatibility
