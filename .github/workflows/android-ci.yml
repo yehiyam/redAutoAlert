@@ -60,11 +60,16 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: chmod +x gradlew && ./gradlew assembleRelease
 
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
+
       - name: Upload APK (artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.apk
-          path: app/build/outputs/apk/release/app-release.apk
+          name: redAutoAlert-${{ steps.version.outputs.name }}.apk
+          path: app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
           compression-level: 0
 
       - name: Upload APK to rolling release
@@ -74,6 +79,6 @@ jobs:
           tag_name: latest
           name: Latest Release Build
           body: "Auto-built from latest commit on main. Version ${{ steps.version.outputs.name }} (build ${{ steps.version.outputs.code }}). Download the APK directly below."
-          files: app/build/outputs/apk/release/app-release.apk
+          files: app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
           make_latest: true
           prerelease: true
