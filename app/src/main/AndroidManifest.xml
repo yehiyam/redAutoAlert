@@ -44,13 +44,14 @@
             </intent-filter>
         </service>
 
-        <!-- Handles mark-as-read action from Android Auto messaging notifications -->
+        <!-- Handles mark-as-read and reply actions from Android Auto messaging notifications -->
         <receiver
             android:name=".service.AlertDismissReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.redautoalert.ACTION_MARK_READ" />
+                <action android:name="com.redautoalert.ACTION_REPLY" />
             </intent-filter>
         </receiver>
 

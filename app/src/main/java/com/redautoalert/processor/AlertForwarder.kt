@@ -10,6 +10,7 @@ import android.os.Looper
 import androidx.car.app.notification.CarAppExtender
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
+import androidx.core.app.RemoteInput
 import com.redautoalert.R
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.model.AlertProcessor
@@ -90,6 +91,24 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Reply action (required by Android Auto — without it notifications are silently ignored)
+        val replyIntent = PendingIntent.getBroadcast(
+            context, notificationId + 20000,
+            Intent(AlertDismissReceiver.ACTION_REPLY)
+                .setPackage(context.packageName)
+                .putExtra(AlertDismissReceiver.EXTRA_NOTIFICATION_ID, notificationId),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+        val remoteInput = RemoteInput.Builder(AlertDismissReceiver.KEY_TEXT_REPLY)
+            .setLabel("Reply")
+            .build()
+        val replyAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_alert, "Reply", replyIntent
+        ).setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_REPLY)
+            .setShowsUserInterface(false)
+            .addRemoteInput(remoteInput)
+            .build()
+
         // Mark-as-read action (required by Android Auto for messaging notifications)
         val markReadIntent = PendingIntent.getBroadcast(
             context, notificationId + 10000,
@@ -115,7 +134,8 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             .setAutoCancel(true)
             .setGroup(NOTIFICATION_GROUP)
             .setTimeoutAfter(5 * 60 * 1000) // Auto-dismiss after 5 minutes
-            .addAction(markReadAction)
+            .addInvisibleAction(replyAction)
+            .addInvisibleAction(markReadAction)
             .extend(
                 CarAppExtender.Builder()
                     .setImportance(NotificationManager.IMPORTANCE_HIGH)
