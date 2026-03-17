@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Red Auto Alert</string>
+    <string name="app_subtitle">Red Alert → Android Auto Bridge</string>
+    <string name="how_it_works">ℹ️ How it works:\n\n1. The Red Alert app (Tzofar) sends rocket alerts as notifications\n2. This app captures those notifications\n3. Re-posts them as messaging-style notifications\n4. Android Auto displays them on your car screen\n5. Optionally reads them aloud via TTS\n\nMake sure the Red Alert app is installed and configured with your area alerts.</string>
+</resources>
