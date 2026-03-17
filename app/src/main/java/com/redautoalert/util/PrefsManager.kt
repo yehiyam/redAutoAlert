@@ -13,6 +13,7 @@ class PrefsManager(context: Context) {
         private const val KEY_FORWARDING_ENABLED = "forwarding_enabled"
         private const val KEY_TTS_ENABLED = "tts_enabled"
         private const val KEY_TTS_LANGUAGE = "tts_language"
+        private const val KEY_PHONE_NOTIFICATION_ENABLED = "phone_notification_enabled"
     }
 
     private val prefs: SharedPreferences =
@@ -29,4 +30,8 @@ class PrefsManager(context: Context) {
     var ttsLanguage: String
         get() = prefs.getString(KEY_TTS_LANGUAGE, "he") ?: "he"
         set(value) = prefs.edit().putString(KEY_TTS_LANGUAGE, value).apply()
+
+    var isPhoneNotificationEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PHONE_NOTIFICATION_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PHONE_NOTIFICATION_ENABLED, value).apply()
 }

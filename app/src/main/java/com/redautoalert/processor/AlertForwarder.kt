@@ -24,6 +24,8 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
     companion object {
         const val CHANNEL_ID = "red_auto_alert_channel"
         const val CHANNEL_NAME = "Red Alert Notifications"
+        private const val SILENT_CHANNEL_ID = "red_auto_alert_channel_silent"
+        private const val SILENT_CHANNEL_NAME = "Red Alert (Android Auto Only)"
         private const val NOTIFICATION_GROUP = "red_alert_group"
         private var notificationCounter = 100
     }
@@ -39,6 +41,7 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
 
     init {
         createNotificationChannel()
+        createSilentNotificationChannel()
     }
 
     override fun onAlert(event: AlertEvent) {
@@ -88,7 +91,7 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             .setShowsUserInterface(false)
             .build()
 
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(context, if (prefs.isPhoneNotificationEnabled) CHANNEL_ID else SILENT_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_alert)
             .setStyle(messagingStyle)
             .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -135,6 +138,25 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             setShowBadge(true)
             setBypassDnd(true)
             lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+        }
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createSilentNotificationChannel() {
+        val channel = NotificationChannel(
+            SILENT_CHANNEL_ID,
+            SILENT_CHANNEL_NAME,
+            // Must be at least IMPORTANCE_HIGH so Android Auto still shows the alert.
+            // Phone-side noise is suppressed via setSound/enableVibration below.
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Silent carrier for Android Auto-only Red Alert notifications"
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
+            setShowBadge(false)
+            setBypassDnd(false)
+            lockscreenVisibility = android.app.Notification.VISIBILITY_SECRET
         }
         notificationManager.createNotificationChannel(channel)
     }

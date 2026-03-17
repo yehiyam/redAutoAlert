@@ -39,6 +39,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var permissionStatus: TextView
     private lateinit var forwardingSwitch: SwitchMaterial
     private lateinit var ttsSwitch: SwitchMaterial
+    private lateinit var phoneNotificationSwitch: SwitchMaterial
     private lateinit var languageSpinner: Spinner
     private lateinit var grantPermissionButton: Button
     private lateinit var testAlertButton: Button
@@ -83,6 +84,7 @@ class SettingsActivity : AppCompatActivity() {
         permissionStatus = findViewById(R.id.permissionStatus)
         forwardingSwitch = findViewById(R.id.forwardingSwitch)
         ttsSwitch = findViewById(R.id.ttsSwitch)
+        phoneNotificationSwitch = findViewById(R.id.phoneNotificationSwitch)
         languageSpinner = findViewById(R.id.languageSpinner)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
         testAlertButton = findViewById(R.id.testAlertButton)
@@ -96,6 +98,7 @@ class SettingsActivity : AppCompatActivity() {
         // Set initial values
         forwardingSwitch.isChecked = prefs.isForwardingEnabled
         ttsSwitch.isChecked = prefs.isTtsEnabled
+        phoneNotificationSwitch.isChecked = prefs.isPhoneNotificationEnabled
 
         // Language spinner
         val languages = arrayOf("עברית (Hebrew)", "English", "Русский (Russian)", "العربية (Arabic)")
@@ -114,6 +117,10 @@ class SettingsActivity : AppCompatActivity() {
 
         ttsSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.isTtsEnabled = isChecked
+        }
+
+        phoneNotificationSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.isPhoneNotificationEnabled = isChecked
         }
 
         languageSpinner.onItemSelectedListener = object :

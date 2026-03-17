@@ -146,6 +146,16 @@
                     android:text="Voice announcements (TTS)"
                     android:textSize="16sp"
                     android:minHeight="48dp"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Phone notification toggle -->
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/phoneNotificationSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/phone_notification_enabled"
+                    android:textSize="16sp"
+                    android:minHeight="48dp"
                     android:layout_marginBottom="12dp" />
 
                 <!-- Language selector -->
