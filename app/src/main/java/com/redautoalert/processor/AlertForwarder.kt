@@ -144,23 +144,7 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             .build()
     }
 
-    private fun formatAlertText(event: AlertEvent): String {
-        val typeEmoji = when (event.alertType) {
-            AlertEvent.AlertType.ROCKET -> "🚀"
-            AlertEvent.AlertType.DRONE -> "✈️"
-            AlertEvent.AlertType.EARTHQUAKE -> "🌍"
-            AlertEvent.AlertType.TSUNAMI -> "🌊"
-            AlertEvent.AlertType.HAZARDOUS_MATERIALS -> "☢️"
-            AlertEvent.AlertType.TERRORIST_INFILTRATION -> "⚠️"
-            AlertEvent.AlertType.UNKNOWN -> "🚨"
-        }
-
-        return if (event.cities.isNotEmpty()) {
-            "$typeEmoji ${event.cities.joinToString(", ")}"
-        } else {
-            "$typeEmoji ${event.text}"
-        }
-    }
+    private fun formatAlertText(event: AlertEvent): String = event.text
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(

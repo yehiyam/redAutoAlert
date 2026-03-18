@@ -7,6 +7,10 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -20,6 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.textfield.TextInputEditText
 import com.redautoalert.BuildConfig
 import com.redautoalert.R
 import com.redautoalert.RedAutoAlertApp
@@ -33,6 +38,7 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         private const val POST_NOTIFICATION_REQUEST_CODE = 1001
+        private const val FILTER_SAVE_DELAY_MS = 500L
     }
 
     private lateinit var prefs: PrefsManager
@@ -44,6 +50,8 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var ttsSwitch: SwitchMaterial
     private lateinit var phoneNotificationSwitch: SwitchMaterial
     private lateinit var languageSpinner: Spinner
+    private lateinit var includeFilterEdit: TextInputEditText
+    private lateinit var excludeFilterEdit: TextInputEditText
     private lateinit var grantPermissionButton: Button
     private lateinit var openAndroidAutoButton: Button
     private lateinit var testAlertButton: Button
@@ -51,6 +59,10 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var debugLogScroll: ScrollView
     private lateinit var debugLogCard: MaterialCardView
     private val debugLogListener: () -> Unit = { runOnUiThread { refreshDebugLog() } }
+
+    private val filterSaveHandler = Handler(Looper.getMainLooper())
+    private var includeSaveRunnable: Runnable? = null
+    private var excludeSaveRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +102,8 @@ class SettingsActivity : AppCompatActivity() {
         ttsSwitch = findViewById(R.id.ttsSwitch)
         phoneNotificationSwitch = findViewById(R.id.phoneNotificationSwitch)
         languageSpinner = findViewById(R.id.languageSpinner)
+        includeFilterEdit = findViewById(R.id.includeFilterEdit)
+        excludeFilterEdit = findViewById(R.id.excludeFilterEdit)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
         openAndroidAutoButton = findViewById(R.id.openAndroidAutoButton)
         testAlertButton = findViewById(R.id.testAlertButton)
@@ -112,6 +126,10 @@ class SettingsActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         languageSpinner.adapter = adapter
         languageSpinner.setSelection(languageCodes.indexOf(prefs.ttsLanguage).coerceAtLeast(0))
+
+        // Filter fields
+        includeFilterEdit.setText(prefs.includeFilter)
+        excludeFilterEdit.setText(prefs.excludeFilter)
     }
 
     private fun setupListeners() {
@@ -158,6 +176,30 @@ class SettingsActivity : AppCompatActivity() {
         openAndroidAutoButton.setOnClickListener {
             openAndroidAuto()
         }
+
+        includeFilterEdit.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val value = s?.toString() ?: ""
+                includeSaveRunnable?.let { filterSaveHandler.removeCallbacks(it) }
+                includeSaveRunnable = Runnable { prefs.includeFilter = value }.also {
+                    filterSaveHandler.postDelayed(it, FILTER_SAVE_DELAY_MS)
+                }
+            }
+        })
+
+        excludeFilterEdit.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val value = s?.toString() ?: ""
+                excludeSaveRunnable?.let { filterSaveHandler.removeCallbacks(it) }
+                excludeSaveRunnable = Runnable { prefs.excludeFilter = value }.also {
+                    filterSaveHandler.postDelayed(it, FILTER_SAVE_DELAY_MS)
+                }
+            }
+        })
     }
 
     private fun updatePermissionStatus() {
