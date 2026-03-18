@@ -58,7 +58,7 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             // Remove from phone after a delay long enough for Android Auto to have received
             // and rendered the notification.  Cancelling too quickly (e.g. 2 s) races with
             // the car head-unit's notification pipeline and the alert never appears on screen.
-            handler.postDelayed({ notificationManager.cancel(notificationId) }, 30_000)
+            handler.postDelayed({ notificationManager.cancel(notificationId) }, 5_000)
         }
     }
 

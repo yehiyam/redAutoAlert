@@ -1,7 +1,10 @@
 package com.redautoalert.ui
 
 import android.Manifest
+import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -42,6 +45,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var phoneNotificationSwitch: SwitchMaterial
     private lateinit var languageSpinner: Spinner
     private lateinit var grantPermissionButton: Button
+    private lateinit var openAndroidAutoButton: Button
     private lateinit var testAlertButton: Button
     private lateinit var debugLogText: TextView
     private lateinit var debugLogScroll: ScrollView
@@ -87,6 +91,7 @@ class SettingsActivity : AppCompatActivity() {
         phoneNotificationSwitch = findViewById(R.id.phoneNotificationSwitch)
         languageSpinner = findViewById(R.id.languageSpinner)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
+        openAndroidAutoButton = findViewById(R.id.openAndroidAutoButton)
         testAlertButton = findViewById(R.id.testAlertButton)
         debugLogText = findViewById(R.id.debugLogText)
         debugLogScroll = findViewById(R.id.debugLogScroll)
@@ -149,6 +154,10 @@ class SettingsActivity : AppCompatActivity() {
         testAlertButton.setOnClickListener {
             sendTestAlert()
         }
+
+        openAndroidAutoButton.setOnClickListener {
+            openAndroidAuto()
+        }
     }
 
     private fun updatePermissionStatus() {
@@ -190,6 +199,42 @@ class SettingsActivity : AppCompatActivity() {
         AlertEventBus.emitBlocking(testEvent)
         DebugLog.log("Test alert sent")
         Toast.makeText(this, "Test alert sent! Check Android Auto.", Toast.LENGTH_LONG).show()
+    }
+
+    private fun openAndroidAuto() {
+        val androidAutoPackage = "com.google.android.projection.gearhead"
+        // Try to open Android Auto settings directly
+        val settingsIntent = Intent().apply {
+            component = ComponentName(
+                androidAutoPackage,
+                "com.google.android.apps.auto.settings.CarSettingsActivity"
+            )
+        }
+        if (settingsIntent.resolveActivity(packageManager) != null) {
+            startActivity(settingsIntent)
+            return
+        }
+        // Fall back to launching the Android Auto app
+        val launchIntent = packageManager.getLaunchIntentForPackage(androidAutoPackage)
+        if (launchIntent != null) {
+            startActivity(launchIntent)
+            return
+        }
+        // Android Auto not installed — open Play Store
+        val playStoreIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("market://details?id=$androidAutoPackage")
+        )
+        if (playStoreIntent.resolveActivity(packageManager) != null) {
+            startActivity(playStoreIntent)
+        } else {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$androidAutoPackage")
+                )
+            )
+        }
     }
 
     private fun showRestrictedSettingsDialog() {
