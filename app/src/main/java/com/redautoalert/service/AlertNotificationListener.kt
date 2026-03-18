@@ -33,6 +33,12 @@ class AlertNotificationListener : NotificationListenerService() {
 
     private lateinit var prefs: PrefsManager
 
+    // Cached parsed filter patterns — invalidated when the stored filter string changes
+    private var lastIncludeFilter: String? = null
+    private var cachedIncludePatterns: List<String> = emptyList()
+    private var lastExcludeFilter: String? = null
+    private var cachedExcludePatterns: List<String> = emptyList()
+
     override fun onCreate() {
         super.onCreate()
         prefs = PrefsManager(this)
@@ -72,6 +78,13 @@ class AlertNotificationListener : NotificationListenerService() {
         recentAlertIds.add(dedupeKey)
         if (recentAlertIds.size > MAX_RECENT) {
             recentAlertIds.iterator().let { it.next(); it.remove() }
+        }
+
+        // Apply include/exclude text filters
+        if (!matchesFilters(event)) {
+            Log.d(TAG, "Alert filtered by text rules: ${event.title} - ${event.text}")
+            DebugLog.log("Alert filtered (text rules): ${event.text}")
+            return
         }
 
         Log.i(TAG, "Forwarding alert: ${event.title} - ${event.text}")
@@ -135,5 +148,45 @@ class AlertNotificationListener : NotificationListenerService() {
         return cleanText.split(",", "،", "、")
             .map { it.trim() }
             .filter { it.isNotBlank() }
+    }
+
+    /**
+     * Returns true if the alert passes the include/exclude text filters stored in preferences.
+     *
+     * - Include filter: if non-empty, at least one pattern must be present in the alert text.
+     * - Exclude filter: if non-empty, none of the patterns may be present in the alert text.
+     * Both comparisons are case-insensitive; patterns are comma-separated.
+     * Parsed patterns are cached and only re-parsed when the stored filter string changes.
+     */
+    private fun matchesFilters(event: AlertEvent): Boolean {
+        val searchText = "${event.title} ${event.text}".lowercase()
+
+        val includePatterns = getIncludePatterns()
+        if (includePatterns.isNotEmpty() && includePatterns.none { it in searchText }) return false
+
+        val excludePatterns = getExcludePatterns()
+        if (excludePatterns.any { it in searchText }) return false
+
+        return true
+    }
+
+    private fun getIncludePatterns(): List<String> {
+        val filter = prefs.includeFilter.trim()
+        if (filter != lastIncludeFilter) {
+            lastIncludeFilter = filter
+            cachedIncludePatterns = if (filter.isEmpty()) emptyList()
+            else filter.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+        }
+        return cachedIncludePatterns
+    }
+
+    private fun getExcludePatterns(): List<String> {
+        val filter = prefs.excludeFilter.trim()
+        if (filter != lastExcludeFilter) {
+            lastExcludeFilter = filter
+            cachedExcludePatterns = if (filter.isEmpty()) emptyList()
+            else filter.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+        }
+        return cachedExcludePatterns
     }
 }
