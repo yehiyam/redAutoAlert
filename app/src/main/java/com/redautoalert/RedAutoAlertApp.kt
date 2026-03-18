@@ -3,7 +3,6 @@ package com.redautoalert
 import android.app.Application
 import android.util.Log
 import com.redautoalert.processor.AlertForwarder
-import com.redautoalert.processor.TtsAlertAnnouncer
 import com.redautoalert.service.AlertEventBus
 
 /**
@@ -19,17 +18,13 @@ class RedAutoAlertApp : Application() {
 
     lateinit var alertForwarder: AlertForwarder
         private set
-    lateinit var ttsAnnouncer: TtsAlertAnnouncer
-        private set
 
     override fun onCreate() {
         super.onCreate()
 
         alertForwarder = AlertForwarder(this)
-        ttsAnnouncer = TtsAlertAnnouncer(this)
 
         AlertEventBus.registerProcessor(alertForwarder)
-        AlertEventBus.registerProcessor(ttsAnnouncer)
 
         Log.i(TAG, "Processors registered")
     }

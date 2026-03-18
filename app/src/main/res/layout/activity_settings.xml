@@ -179,16 +179,6 @@
                     android:minHeight="48dp"
                     android:layout_marginBottom="8dp" />
 
-                <!-- TTS toggle -->
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/ttsSwitch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Voice announcements (TTS)"
-                    android:textSize="16sp"
-                    android:minHeight="48dp"
-                    android:layout_marginBottom="8dp" />
-
                 <!-- Phone notification toggle -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/phoneNotificationSwitch"
@@ -198,20 +188,6 @@
                     android:textSize="16sp"
                     android:minHeight="48dp"
                     android:layout_marginBottom="12dp" />
-
-                <!-- Language selector -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="TTS Language"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="4dp" />
-
-                <Spinner
-                    android:id="@+id/languageSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="16dp" />
 
                 <!-- Alert filter section -->
                 <TextView
@@ -288,7 +264,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Send a test alert to verify Android Auto notification and TTS announcement."
+                    android:text="Send a test alert to verify Android Auto notification."
                     android:textSize="14sp"
                     android:layout_marginBottom="12dp" />
 
