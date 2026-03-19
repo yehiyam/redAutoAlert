@@ -29,7 +29,7 @@ jobs:
           MINOR="${BASH_REMATCH[2]}"
           PATCH="${BASH_REMATCH[3]}"
           VERSION_NAME="${MAJOR}.${MINOR}.${PATCH}"
-          VERSION_CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
+          VERSION_CODE=$(( MAJOR * 1000000 + MINOR * 1000 + PATCH ))
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
           echo "code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
