@@ -11,7 +11,7 @@
     <string name="exclude_filter_label">Exclude filter</string>
     <string name="exclude_filter_hint">Exclude (comma-separated, e.g. בדיקה, test)</string>
     <string name="filter_help">Comma-separated keywords. Include: forward only matching alerts. Exclude: skip matching alerts. Leave empty to forward all.</string>
-    <string name="how_it_works">ℹ️ How it works:\n\n1. The Red Alert app (Tzofar) sends rocket alerts as notifications\n2. This app captures those notifications\n3. Re-posts them as messaging-style notifications\n4. Android Auto displays them on your car screen\n5. Optionally reads them aloud via TTS\n\nMake sure the Red Alert app is installed and configured with your area alerts.</string>
+    <string name="how_it_works">ℹ️ How it works:\n\n1. The Red Alert app (Tzofar) sends rocket alerts as notifications\n2. This app captures those notifications\n3. Re-posts them as messaging-style notifications\n4. Android Auto displays them on your car screen\n\nMake sure the Red Alert app is installed and configured with your area alerts.</string>
     <string name="android_auto_setup_title">Android Auto Setup</string>
     <string name="android_auto_unknown_sources_info">To display alerts from this app on your car screen, enable \"Unknown sources\" in Android Auto:\n\n1. Open the Android Auto app\n2. Tap the ☰ menu icon\n3. Scroll down and tap the version number 10 times\n4. Tap OK to enable Developer mode\n5. Go back to the menu → Developer settings\n6. Enable \"Allow apps from unknown sources\"</string>
     <string name="android_auto_open_settings">Open Android Auto</string>

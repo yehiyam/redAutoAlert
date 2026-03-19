@@ -5,8 +5,17 @@
     <!-- Required to post notifications on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Required for foreground service (TTS + alert processing) -->
+    <!-- Required for foreground service (alert processing) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Declare packages the app may query/launch (Android 11+ package visibility) -->
+    <queries>
+        <package android:name="com.google.android.projection.gearhead" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="market" />
+        </intent>
+    </queries>
 
     <application
         android:name=".RedAutoAlertApp"

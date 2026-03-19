@@ -1,6 +1,7 @@
 package com.redautoalert.ui
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,10 +13,8 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ScrollView
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -27,7 +26,6 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.redautoalert.BuildConfig
 import com.redautoalert.R
-import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.service.AlertEventBus
 import com.redautoalert.util.DebugLog
@@ -47,9 +45,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var permissionStatus: TextView
     private lateinit var forwardingSwitch: SwitchMaterial
-    private lateinit var ttsSwitch: SwitchMaterial
     private lateinit var phoneNotificationSwitch: SwitchMaterial
-    private lateinit var languageSpinner: Spinner
     private lateinit var includeFilterEdit: TextInputEditText
     private lateinit var excludeFilterEdit: TextInputEditText
     private lateinit var grantPermissionButton: Button
@@ -99,9 +95,7 @@ class SettingsActivity : AppCompatActivity() {
         statusText = findViewById(R.id.statusText)
         permissionStatus = findViewById(R.id.permissionStatus)
         forwardingSwitch = findViewById(R.id.forwardingSwitch)
-        ttsSwitch = findViewById(R.id.ttsSwitch)
         phoneNotificationSwitch = findViewById(R.id.phoneNotificationSwitch)
-        languageSpinner = findViewById(R.id.languageSpinner)
         includeFilterEdit = findViewById(R.id.includeFilterEdit)
         excludeFilterEdit = findViewById(R.id.excludeFilterEdit)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
@@ -116,16 +110,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Set initial values
         forwardingSwitch.isChecked = prefs.isForwardingEnabled
-        ttsSwitch.isChecked = prefs.isTtsEnabled
         phoneNotificationSwitch.isChecked = prefs.isPhoneNotificationEnabled
-
-        // Language spinner
-        val languages = arrayOf("עברית (Hebrew)", "English", "Русский (Russian)", "العربية (Arabic)")
-        val languageCodes = arrayOf("he", "en", "ru", "ar")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languages)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        languageSpinner.adapter = adapter
-        languageSpinner.setSelection(languageCodes.indexOf(prefs.ttsLanguage).coerceAtLeast(0))
 
         // Filter fields
         includeFilterEdit.setText(prefs.includeFilter)
@@ -138,25 +123,8 @@ class SettingsActivity : AppCompatActivity() {
             updateStatus()
         }
 
-        ttsSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.isTtsEnabled = isChecked
-        }
-
         phoneNotificationSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.isPhoneNotificationEnabled = isChecked
-        }
-
-        languageSpinner.onItemSelectedListener = object :
-            android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: android.widget.AdapterView<*>?, view: android.view.View?,
-                position: Int, id: Long
-            ) {
-                val codes = arrayOf("he", "en", "ru", "ar")
-                prefs.ttsLanguage = codes[position]
-                (application as? RedAutoAlertApp)?.ttsAnnouncer?.updateLanguage()
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
 
         grantPermissionButton.setOnClickListener {
@@ -245,37 +213,43 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun openAndroidAuto() {
         val androidAutoPackage = "com.google.android.projection.gearhead"
-        // Try to open Android Auto settings directly
-        val settingsIntent = Intent().apply {
-            component = ComponentName(
-                androidAutoPackage,
-                "com.google.android.apps.auto.settings.CarSettingsActivity"
-            )
-        }
-        if (settingsIntent.resolveActivity(packageManager) != null) {
-            startActivity(settingsIntent)
-            return
-        }
-        // Fall back to launching the Android Auto app
-        val launchIntent = packageManager.getLaunchIntentForPackage(androidAutoPackage)
-        if (launchIntent != null) {
-            startActivity(launchIntent)
-            return
-        }
-        // Android Auto not installed — open Play Store
-        val playStoreIntent = Intent(
-            Intent.ACTION_VIEW,
-            Uri.parse("market://details?id=$androidAutoPackage")
-        )
-        if (playStoreIntent.resolveActivity(packageManager) != null) {
-            startActivity(playStoreIntent)
-        } else {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=$androidAutoPackage")
+        try {
+            // Try to open Android Auto settings directly
+            val settingsIntent = Intent().apply {
+                component = ComponentName(
+                    androidAutoPackage,
+                    "com.google.android.apps.auto.settings.CarSettingsActivity"
                 )
+            }
+            if (settingsIntent.resolveActivity(packageManager) != null) {
+                startActivity(settingsIntent)
+                return
+            }
+            // Fall back to launching the Android Auto app
+            val launchIntent = packageManager.getLaunchIntentForPackage(androidAutoPackage)
+            if (launchIntent != null) {
+                startActivity(launchIntent)
+                return
+            }
+            // Android Auto not installed — open Play Store
+            val playStoreIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("market://details?id=$androidAutoPackage")
             )
+            if (playStoreIntent.resolveActivity(packageManager) != null) {
+                startActivity(playStoreIntent)
+            } else {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=$androidAutoPackage")
+                    )
+                )
+            }
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "Could not open Android Auto", Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "Could not open Android Auto", Toast.LENGTH_SHORT).show()
         }
     }
 

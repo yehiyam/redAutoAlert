@@ -11,8 +11,6 @@ class PrefsManager(context: Context) {
     companion object {
         private const val PREFS_NAME = "red_auto_alert_prefs"
         private const val KEY_FORWARDING_ENABLED = "forwarding_enabled"
-        private const val KEY_TTS_ENABLED = "tts_enabled"
-        private const val KEY_TTS_LANGUAGE = "tts_language"
         private const val KEY_PHONE_NOTIFICATION_ENABLED = "phone_notification_enabled"
         private const val KEY_INCLUDE_FILTER = "include_filter"
         private const val KEY_EXCLUDE_FILTER = "exclude_filter"
@@ -24,14 +22,6 @@ class PrefsManager(context: Context) {
     var isForwardingEnabled: Boolean
         get() = prefs.getBoolean(KEY_FORWARDING_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_FORWARDING_ENABLED, value).apply()
-
-    var isTtsEnabled: Boolean
-        get() = prefs.getBoolean(KEY_TTS_ENABLED, true)
-        set(value) = prefs.edit().putBoolean(KEY_TTS_ENABLED, value).apply()
-
-    var ttsLanguage: String
-        get() = prefs.getString(KEY_TTS_LANGUAGE, "he") ?: "he"
-        set(value) = prefs.edit().putString(KEY_TTS_LANGUAGE, value).apply()
 
     var isPhoneNotificationEnabled: Boolean
         get() = prefs.getBoolean(KEY_PHONE_NOTIFICATION_ENABLED, true)
