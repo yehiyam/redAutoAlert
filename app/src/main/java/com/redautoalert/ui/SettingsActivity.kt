@@ -1,6 +1,7 @@
 package com.redautoalert.ui
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -245,7 +246,9 @@ class SettingsActivity : AppCompatActivity() {
                     )
                 )
             }
-        } catch (e: Exception) {
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "Could not open Android Auto", Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
             Toast.makeText(this, "Could not open Android Auto", Toast.LENGTH_SHORT).show()
         }
     }
