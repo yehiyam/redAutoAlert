@@ -18,12 +18,27 @@ android {
     signingConfigs {
         val keystorePath = System.getenv("SIGNING_KEYSTORE_PATH")
         if (!keystorePath.isNullOrBlank()) {
+            val keystoreFile = file(keystorePath)
+            val storePasswordEnv = System.getenv("SIGNING_KEYSTORE_PASSWORD")
+            val keyAliasEnv = System.getenv("SIGNING_KEY_ALIAS")
+            val keyPasswordEnv = System.getenv("SIGNING_KEY_PASSWORD")
+
+            if (!keystoreFile.exists()) {
+                error("SIGNING_KEYSTORE_PATH is set to '$keystorePath' but the keystore file does not exist.")
+            }
+
+            if (storePasswordEnv.isNullOrBlank() || keyAliasEnv.isNullOrBlank() || keyPasswordEnv.isNullOrBlank()) {
+                error(
+                    "Signing configuration is incomplete. " +
+                        "Ensure SIGNING_KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, and SIGNING_KEY_PASSWORD are all set."
+                )
+            }
+
             create("release") {
-                val keystoreFile = file(keystorePath)
                 storeFile = keystoreFile
-                storePassword = System.getenv("SIGNING_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+                storePassword = storePasswordEnv
+                keyAlias = keyAliasEnv
+                keyPassword = keyPasswordEnv
             }
         }
     }
@@ -32,8 +47,15 @@ android {
         release {
             isMinifyEnabled = false
             val releaseSigning = signingConfigs.findByName("release")
+            val isReleaseTaskRequested = gradle.startParameter.taskNames.any { it.endsWith("Release") }
             if (releaseSigning != null) {
                 signingConfig = releaseSigning
+            } else if (isReleaseTaskRequested) {
+                error(
+                    "Requested a release build (e.g. assembleRelease/bundleRelease), " +
+                            "but no 'release' signingConfig is configured. " +
+                            "Ensure SIGNING_KEYSTORE_PATH and related signing env vars are set."
+                )
             }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
