@@ -61,6 +61,14 @@
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/autoConnectionStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/auto_connection_status_disconnected"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -185,6 +193,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/phone_notification_enabled"
+                    android:textSize="16sp"
+                    android:minHeight="48dp"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Auto-only mode toggle -->
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/autoOnlySwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/auto_only_mode_label"
                     android:textSize="16sp"
                     android:minHeight="48dp"
                     android:layout_marginBottom="12dp" />

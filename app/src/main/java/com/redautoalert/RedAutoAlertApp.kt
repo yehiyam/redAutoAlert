@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.redautoalert.processor.AlertForwarder
 import com.redautoalert.service.AlertEventBus
+import com.redautoalert.util.CarConnectionTracker
 
 /**
  * Application class that initializes alert processors at process startup.
@@ -19,10 +20,16 @@ class RedAutoAlertApp : Application() {
     lateinit var alertForwarder: AlertForwarder
         private set
 
+    lateinit var carConnectionTracker: CarConnectionTracker
+        private set
+
     override fun onCreate() {
         super.onCreate()
 
-        alertForwarder = AlertForwarder(this)
+        carConnectionTracker = CarConnectionTracker(this)
+        carConnectionTracker.start()
+
+        alertForwarder = AlertForwarder(this, carConnectionTracker)
 
         AlertEventBus.registerProcessor(alertForwarder)
 

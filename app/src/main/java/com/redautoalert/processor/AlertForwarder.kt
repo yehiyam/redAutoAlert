@@ -16,13 +16,21 @@ import com.redautoalert.model.AlertEvent
 import com.redautoalert.model.AlertProcessor
 import com.redautoalert.service.AlertDismissReceiver
 import com.redautoalert.ui.SettingsActivity
+import com.redautoalert.util.CarConnectionTracker
+import com.redautoalert.util.DebugLog
 import com.redautoalert.util.PrefsManager
 
 /**
  * Forwards alerts as MessagingStyle notifications so Android Auto displays them.
  * Uses CarAppExtender for car-optimized notification handling.
+ *
+ * When [CarConnectionTracker.isConnected] is false and [PrefsManager.isAutoOnlyMode] is enabled,
+ * alerts are silently dropped until Android Auto reconnects.
  */
-class AlertForwarder(private val context: Context) : AlertProcessor {
+class AlertForwarder(
+    private val context: Context,
+    private val carConnectionTracker: CarConnectionTracker
+) : AlertProcessor {
 
     companion object {
         const val CHANNEL_ID = "red_auto_alert_channel"
@@ -49,6 +57,10 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
     }
 
     override fun onAlert(event: AlertEvent) {
+        if (prefs.isAutoOnlyMode && !carConnectionTracker.isConnected) {
+            DebugLog.log("Alert skipped — Android Auto not connected (Auto-only mode is on)")
+            return
+        }
         val isPhoneNotificationEnabled = prefs.isPhoneNotificationEnabled
         val notificationId = notificationCounter++
         val notification = buildMessagingNotification(event, notificationId)
