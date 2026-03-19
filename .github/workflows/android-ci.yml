@@ -60,16 +60,40 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: chmod +x gradlew && ./gradlew assembleRelease
 
+      - name: Build release AAB
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          BUILD_VERSION_CODE: ${{ steps.version.outputs.code }}
+          BUILD_VERSION_NAME: ${{ steps.version.outputs.name }}
+          SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
       - name: Rename APK
         run: |
           mv app/build/outputs/apk/release/app-release.apk \
              app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
+
+      - name: Rename AAB
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mv app/build/outputs/bundle/release/app-release.aab \
+             app/build/outputs/bundle/release/redAutoAlert-${{ steps.version.outputs.name }}.aab
 
       - name: Upload APK (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: redAutoAlert-${{ steps.version.outputs.name }}.apk
           path: app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
+          compression-level: 0
+
+      - name: Upload AAB (artifact)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: redAutoAlert-${{ steps.version.outputs.name }}.aab
+          path: app/build/outputs/bundle/release/redAutoAlert-${{ steps.version.outputs.name }}.aab
           compression-level: 0
 
       - name: Upload APK to rolling release
@@ -79,6 +103,8 @@ jobs:
           tag_name: latest
           name: Latest Release Build
           body: "Auto-built from latest commit on main. Version ${{ steps.version.outputs.name }} (build ${{ steps.version.outputs.code }}). Download the APK directly below."
-          files: app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
+          files: |
+            app/build/outputs/apk/release/redAutoAlert-${{ steps.version.outputs.name }}.apk
+            app/build/outputs/bundle/release/redAutoAlert-${{ steps.version.outputs.name }}.aab
           make_latest: true
           prerelease: true

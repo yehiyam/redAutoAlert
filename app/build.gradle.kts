@@ -5,39 +5,58 @@ plugins {
 
 android {
     namespace = "com.redautoalert"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.redautoalert"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = (System.getenv("BUILD_VERSION_CODE")?.toIntOrNull()) ?: 1
         versionName = System.getenv("BUILD_VERSION_NAME") ?: "1.0.0"
     }
 
     signingConfigs {
-        create("release") {
-            val keystorePath = System.getenv("SIGNING_KEYSTORE_PATH")
-            val keystorePassword = System.getenv("SIGNING_KEYSTORE_PASSWORD")
-            val keyAliasValue = System.getenv("SIGNING_KEY_ALIAS")
-            val keyPasswordValue = System.getenv("SIGNING_KEY_PASSWORD")
-            require(!keystorePath.isNullOrBlank()) { "SIGNING_KEYSTORE_PATH must be set for release builds" }
-            require(!keystorePassword.isNullOrBlank()) { "SIGNING_KEYSTORE_PASSWORD must be set for release builds" }
-            require(!keyAliasValue.isNullOrBlank()) { "SIGNING_KEY_ALIAS must be set for release builds" }
-            require(!keyPasswordValue.isNullOrBlank()) { "SIGNING_KEY_PASSWORD must be set for release builds" }
+        val keystorePath = System.getenv("SIGNING_KEYSTORE_PATH")
+        if (!keystorePath.isNullOrBlank()) {
             val keystoreFile = file(keystorePath)
-            require(keystoreFile.exists()) { "Keystore file not found at: $keystorePath" }
-            storeFile = keystoreFile
-            storePassword = keystorePassword
-            keyAlias = keyAliasValue
-            keyPassword = keyPasswordValue
+            val storePasswordEnv = System.getenv("SIGNING_KEYSTORE_PASSWORD")
+            val keyAliasEnv = System.getenv("SIGNING_KEY_ALIAS")
+            val keyPasswordEnv = System.getenv("SIGNING_KEY_PASSWORD")
+
+            if (!keystoreFile.exists()) {
+                error("SIGNING_KEYSTORE_PATH is set to '$keystorePath' but the keystore file does not exist.")
+            }
+
+            if (storePasswordEnv.isNullOrBlank() || keyAliasEnv.isNullOrBlank() || keyPasswordEnv.isNullOrBlank()) {
+                error(
+                    "Signing configuration is incomplete. " +
+                        "Ensure SIGNING_KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, and SIGNING_KEY_PASSWORD are all set."
+                )
+            }
+
+            create("release") {
+                storeFile = keystoreFile
+                storePassword = storePasswordEnv
+                keyAlias = keyAliasEnv
+                keyPassword = keyPasswordEnv
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            val releaseSigning = signingConfigs.findByName("release")
+            val isReleaseTaskRequested = gradle.startParameter.taskNames.any { it.endsWith("Release") }
+            if (releaseSigning != null) {
+                signingConfig = releaseSigning
+            } else if (isReleaseTaskRequested) {
+                error(
+                    "Requested a release build (e.g. assembleRelease/bundleRelease), " +
+                            "but no 'release' signingConfig is configured. " +
+                            "Ensure SIGNING_KEYSTORE_PATH and related signing env vars are set."
+                )
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
