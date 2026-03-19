@@ -5,39 +5,36 @@ plugins {
 
 android {
     namespace = "com.redautoalert"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.redautoalert"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = (System.getenv("BUILD_VERSION_CODE")?.toIntOrNull()) ?: 1
         versionName = System.getenv("BUILD_VERSION_NAME") ?: "1.0.0"
     }
 
     signingConfigs {
-        create("release") {
-            val keystorePath = System.getenv("SIGNING_KEYSTORE_PATH")
-            val keystorePassword = System.getenv("SIGNING_KEYSTORE_PASSWORD")
-            val keyAliasValue = System.getenv("SIGNING_KEY_ALIAS")
-            val keyPasswordValue = System.getenv("SIGNING_KEY_PASSWORD")
-            require(!keystorePath.isNullOrBlank()) { "SIGNING_KEYSTORE_PATH must be set for release builds" }
-            require(!keystorePassword.isNullOrBlank()) { "SIGNING_KEYSTORE_PASSWORD must be set for release builds" }
-            require(!keyAliasValue.isNullOrBlank()) { "SIGNING_KEY_ALIAS must be set for release builds" }
-            require(!keyPasswordValue.isNullOrBlank()) { "SIGNING_KEY_PASSWORD must be set for release builds" }
-            val keystoreFile = file(keystorePath)
-            require(keystoreFile.exists()) { "Keystore file not found at: $keystorePath" }
-            storeFile = keystoreFile
-            storePassword = keystorePassword
-            keyAlias = keyAliasValue
-            keyPassword = keyPasswordValue
+        val keystorePath = System.getenv("SIGNING_KEYSTORE_PATH")
+        if (!keystorePath.isNullOrBlank()) {
+            create("release") {
+                val keystoreFile = file(keystorePath)
+                storeFile = keystoreFile
+                storePassword = System.getenv("SIGNING_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning != null) {
+                signingConfig = releaseSigning
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
