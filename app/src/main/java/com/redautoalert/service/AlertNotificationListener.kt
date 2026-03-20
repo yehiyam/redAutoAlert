@@ -7,6 +7,7 @@ import android.util.Log
 import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.processor.AlertForwarder
+import com.redautoalert.util.CarConnectionTracker
 import com.redautoalert.util.DebugLog
 import com.redautoalert.util.PrefsManager
 
@@ -46,7 +47,8 @@ class AlertNotificationListener : NotificationListenerService() {
         // but if the system restarted us in an unusual way, register as fallback.
         if (application !is RedAutoAlertApp) {
             Log.w(TAG, "Application not initialized, registering processors as fallback")
-            AlertEventBus.registerProcessor(AlertForwarder(this))
+            val tracker = CarConnectionTracker(this).also { it.start() }
+            AlertEventBus.registerProcessor(AlertForwarder(this, tracker))
         }
 
         Log.i(TAG, "AlertNotificationListener started")

@@ -3,8 +3,8 @@ package com.redautoalert.util
 import android.content.Context
 import androidx.car.app.connection.CarConnection
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.Transformations
 
 /**
  * Tracks whether Android Auto is currently connected using the CarConnection API.
@@ -32,11 +32,15 @@ class CarConnectionTracker(context: Context) {
     /**
      * LiveData that emits `true` when Android Auto is connected, `false` otherwise.
      *
-     * Built with [Transformations.map], so it only actively observes [type] while it has
-     * active observers — no manual lifecycle management required.
+     * Backed by a [MediatorLiveData] that observes [type] while it has active observers.
+     * The [observeForever] observer in [start] keeps [type] observed for the process
+     * lifetime regardless of UI observers.
      */
-    val isConnectedLiveData: LiveData<Boolean> =
-        Transformations.map(carConnection.type) { it != CarConnection.CONNECTION_TYPE_NOT_CONNECTED }
+    val isConnectedLiveData: LiveData<Boolean> = MediatorLiveData<Boolean>().also { liveData ->
+        liveData.addSource(carConnection.type) { connectionType ->
+            liveData.value = connectionType != CarConnection.CONNECTION_TYPE_NOT_CONNECTED
+        }
+    }
 
     private val observer = Observer<Int> { connectionType ->
         val connected = connectionType != CarConnection.CONNECTION_TYPE_NOT_CONNECTED
