@@ -30,7 +30,7 @@ class PrefsManager(context: Context) {
 
     /** When true, alerts are only forwarded while Android Auto is connected. */
     var isAutoOnlyMode: Boolean
-        get() = prefs.getBoolean(KEY_AUTO_ONLY_MODE, false)
+        get() = prefs.getBoolean(KEY_AUTO_ONLY_MODE, true)
         set(value) = prefs.edit().putBoolean(KEY_AUTO_ONLY_MODE, value).apply()
 
     var includeFilter: String
