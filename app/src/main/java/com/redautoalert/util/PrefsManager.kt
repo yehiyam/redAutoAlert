@@ -12,6 +12,7 @@ class PrefsManager(context: Context) {
         private const val PREFS_NAME = "red_auto_alert_prefs"
         private const val KEY_FORWARDING_ENABLED = "forwarding_enabled"
         private const val KEY_PHONE_NOTIFICATION_ENABLED = "phone_notification_enabled"
+        private const val KEY_AUTO_ONLY_MODE = "auto_only_mode"
         private const val KEY_INCLUDE_FILTER = "include_filter"
         private const val KEY_EXCLUDE_FILTER = "exclude_filter"
     }
@@ -26,6 +27,11 @@ class PrefsManager(context: Context) {
     var isPhoneNotificationEnabled: Boolean
         get() = prefs.getBoolean(KEY_PHONE_NOTIFICATION_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_PHONE_NOTIFICATION_ENABLED, value).apply()
+
+    /** When true, alerts are only forwarded while Android Auto is connected. */
+    var isAutoOnlyMode: Boolean
+        get() = prefs.getBoolean(KEY_AUTO_ONLY_MODE, true)
+        set(value) = prefs.edit().putBoolean(KEY_AUTO_ONLY_MODE, value).apply()
 
     var includeFilter: String
         get() = prefs.getString(KEY_INCLUDE_FILTER, "") ?: ""

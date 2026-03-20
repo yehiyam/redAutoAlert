@@ -5,6 +5,9 @@
     <string name="debug_log_title">Debug Log</string>
     <string name="debug_log_empty">No events yet…</string>
     <string name="phone_notification_enabled">Show notification on phone</string>
+    <string name="auto_only_mode_label">Only forward when Android Auto is connected</string>
+    <string name="auto_connection_status_connected">🚗 Android Auto connected</string>
+    <string name="auto_connection_status_disconnected">📵 Android Auto not connected</string>
     <string name="filter_section_title">Alert Filters</string>
     <string name="include_filter_label">Include filter</string>
     <string name="include_filter_hint">Include only (comma-separated, e.g. תל אביב, ירושלים)</string>

@@ -26,6 +26,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.redautoalert.BuildConfig
 import com.redautoalert.R
+import com.redautoalert.RedAutoAlertApp
 import com.redautoalert.model.AlertEvent
 import com.redautoalert.service.AlertEventBus
 import com.redautoalert.util.DebugLog
@@ -43,9 +44,11 @@ class SettingsActivity : AppCompatActivity() {
 
     // Views
     private lateinit var statusText: TextView
+    private lateinit var autoConnectionStatus: TextView
     private lateinit var permissionStatus: TextView
     private lateinit var forwardingSwitch: SwitchMaterial
     private lateinit var phoneNotificationSwitch: SwitchMaterial
+    private lateinit var autoOnlySwitch: SwitchMaterial
     private lateinit var includeFilterEdit: TextInputEditText
     private lateinit var excludeFilterEdit: TextInputEditText
     private lateinit var grantPermissionButton: Button
@@ -68,6 +71,7 @@ class SettingsActivity : AppCompatActivity() {
 
         bindViews()
         setupListeners()
+        observeCarConnection()
         requestPostNotificationPermission()
 
         DebugLog.log("App opened")
@@ -93,9 +97,11 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun bindViews() {
         statusText = findViewById(R.id.statusText)
+        autoConnectionStatus = findViewById(R.id.autoConnectionStatus)
         permissionStatus = findViewById(R.id.permissionStatus)
         forwardingSwitch = findViewById(R.id.forwardingSwitch)
         phoneNotificationSwitch = findViewById(R.id.phoneNotificationSwitch)
+        autoOnlySwitch = findViewById(R.id.autoOnlySwitch)
         includeFilterEdit = findViewById(R.id.includeFilterEdit)
         excludeFilterEdit = findViewById(R.id.excludeFilterEdit)
         grantPermissionButton = findViewById(R.id.grantPermissionButton)
@@ -111,6 +117,7 @@ class SettingsActivity : AppCompatActivity() {
         // Set initial values
         forwardingSwitch.isChecked = prefs.isForwardingEnabled
         phoneNotificationSwitch.isChecked = prefs.isPhoneNotificationEnabled
+        autoOnlySwitch.isChecked = prefs.isAutoOnlyMode
 
         // Filter fields
         includeFilterEdit.setText(prefs.includeFilter)
@@ -125,6 +132,10 @@ class SettingsActivity : AppCompatActivity() {
 
         phoneNotificationSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.isPhoneNotificationEnabled = isChecked
+        }
+
+        autoOnlySwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.isAutoOnlyMode = isChecked
         }
 
         grantPermissionButton.setOnClickListener {
@@ -168,6 +179,16 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun observeCarConnection() {
+        val tracker = (application as RedAutoAlertApp).carConnectionTracker
+        tracker.isConnectedLiveData.observe(this) { connected ->
+            autoConnectionStatus.text = getString(
+                if (connected) R.string.auto_connection_status_connected
+                else R.string.auto_connection_status_disconnected
+            )
+        }
     }
 
     private fun updatePermissionStatus() {
