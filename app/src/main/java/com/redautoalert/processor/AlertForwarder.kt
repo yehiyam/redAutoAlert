@@ -144,7 +144,36 @@ class AlertForwarder(private val context: Context) : AlertProcessor {
             .build()
     }
 
-    private fun formatAlertText(event: AlertEvent): String = event.text
+    private fun formatAlertText(event: AlertEvent): String {
+        return extractAreas(event.text) ?: event.text
+    }
+
+    /**
+     * Early-warning alerts ("התרעה מקדימה") follow this pattern:
+     *   "בעקבות זיהוי שיגורים, בדקות הקרובות צפויות להתקבל התרעות באזורים X, Y, Z. לרשימת הישובים המלאה"
+     *
+     * Android Auto's notification preview only shows the first ~60 characters,
+     * so the actual area names are truncated. This method extracts the area list
+     * and places it at the start so drivers see the relevant info immediately.
+     */
+    internal fun extractAreas(text: String): String? {
+        val marker = "באזורים"
+        val markerIdx = text.indexOf(marker)
+        if (markerIdx < 0) return null
+
+        val afterMarker = text.substring(markerIdx + marker.length).trimStart()
+
+        // Strip the trailing "לרשימת הישובים המלאה" suffix if present
+        val suffix = "לרשימת הישובים המלאה"
+        val suffixIdx = afterMarker.indexOf(suffix)
+        val areas = if (suffixIdx >= 0) {
+            afterMarker.substring(0, suffixIdx).trimEnd('.', ' ', ',')
+        } else {
+            afterMarker.trimEnd('.', ' ', ',')
+        }
+
+        return areas.ifBlank { null }
+    }
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
